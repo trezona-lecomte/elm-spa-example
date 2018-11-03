@@ -14,7 +14,7 @@ import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
 import Route exposing (Route)
 import Session exposing (Session)
-import Viewer exposing (Viewer)
+import User exposing (User)
 
 
 
@@ -152,7 +152,7 @@ type Msg
     = SubmittedForm
     | EnteredEmail String
     | EnteredPassword String
-    | CompletedLogin (Result Http.Error Viewer)
+    | CompletedLogin (Result Http.Error User)
     | GotSession Session
 
 
@@ -189,7 +189,7 @@ update msg model =
 
         CompletedLogin (Ok viewer) ->
             ( model
-            , Viewer.store viewer
+            , User.store viewer
             )
 
         GotSession session ->
@@ -290,7 +290,7 @@ trimFields form =
 -- HTTP
 
 
-login : TrimmedForm -> Http.Request Viewer
+login : TrimmedForm -> Http.Request User
 login (Trimmed form) =
     let
         user =
@@ -303,7 +303,7 @@ login (Trimmed form) =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Api.login body Viewer.decoder
+    Api.login body User.decoder
 
 
 

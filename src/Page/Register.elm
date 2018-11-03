@@ -11,7 +11,7 @@ import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
 import Route exposing (Route)
 import Session exposing (Session)
-import Viewer exposing (Viewer)
+import User exposing (User)
 
 
 
@@ -137,7 +137,7 @@ type Msg
     | EnteredEmail String
     | EnteredUsername String
     | EnteredPassword String
-    | CompletedRegister (Result Http.Error Viewer)
+    | CompletedRegister (Result Http.Error User)
     | GotSession Session
 
 
@@ -177,7 +177,7 @@ update msg model =
 
         CompletedRegister (Ok viewer) ->
             ( model
-            , Viewer.store viewer
+            , User.store viewer
             )
 
         GotSession session ->
@@ -277,8 +277,8 @@ validateField (Trimmed form) field =
                 if String.isEmpty form.password then
                     [ "password can't be blank." ]
 
-                else if String.length form.password < Viewer.minPasswordChars then
-                    [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
+                else if String.length form.password < User.minPasswordChars then
+                    [ "password must be at least " ++ String.fromInt User.minPasswordChars ++ " characters long." ]
 
                 else
                     []
@@ -300,7 +300,7 @@ trimFields form =
 -- HTTP
 
 
-register : TrimmedForm -> Http.Request Viewer
+register : TrimmedForm -> Http.Request User
 register (Trimmed form) =
     let
         user =
@@ -314,4 +314,4 @@ register (Trimmed form) =
             Encode.object [ ( "user", user ) ]
                 |> Http.jsonBody
     in
-    Api.register body Viewer.decoder
+    Api.register body User.decoder

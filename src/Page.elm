@@ -6,11 +6,10 @@ import Browser exposing (Document)
 import Html exposing (Html, a, button, div, footer, i, img, li, nav, p, span, text, ul)
 import Html.Attributes exposing (class, classList, href, style)
 import Html.Events exposing (onClick)
-import Profile
 import Route exposing (Route)
 import Session exposing (Session)
+import User exposing (User)
 import Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 {-| Determines which navbar link (if any) will be rendered as active.
@@ -26,8 +25,6 @@ type Page
     | Login
     | Register
     | Settings
-    | Profile Username
-    | NewArticle
 
 
 {-| Take a page's Html and frames it with a header and footer.
@@ -39,48 +36,42 @@ isLoading is for determining whether we should show a loading spinner
 in the header. (This comes up during slow page transitions.)
 
 -}
-view : Maybe Viewer -> Page -> { title : String, content : Html msg } -> Document msg
-view maybeViewer page { title, content } =
+view : Maybe User -> Page -> { title : String, content : Html msg } -> Document msg
+view maybeUser page { title, content } =
     { title = title ++ " - Conduit"
-    , body = viewHeader page maybeViewer :: content :: [ viewFooter ]
+    , body = viewHeader page maybeUser :: content :: [ viewFooter ]
     }
 
 
-viewHeader : Page -> Maybe Viewer -> Html msg
-viewHeader page maybeViewer =
+viewHeader : Page -> Maybe User -> Html msg
+viewHeader page maybeUser =
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
             [ a [ class "navbar-brand", Route.href Route.Home ]
                 [ text "conduit" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
                 navbarLink page Route.Home [ text "Home" ]
-                    :: viewMenu page maybeViewer
+                    :: viewMenu page maybeUser
             ]
         ]
 
 
-viewMenu : Page -> Maybe Viewer -> List (Html msg)
-viewMenu page maybeViewer =
+viewMenu : Page -> Maybe User -> List (Html msg)
+viewMenu page maybeUser =
     let
         linkTo =
             navbarLink page
     in
-    case maybeViewer of
+    case maybeUser of
         Just viewer ->
             let
                 username =
-                    Viewer.username viewer
+                    User.username viewer
 
                 avatar =
-                    Viewer.avatar viewer
+                    User.avatar viewer
             in
-            [ linkTo Route.NewArticle [ i [ class "ion-compose" ] [], text "\u{00A0}New Post" ]
-            , linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text "\u{00A0}Settings" ]
-            , linkTo
-                (Route.Profile username)
-                [ img [ class "user-pic", Avatar.src avatar ] []
-                , Username.toHtml username
-                ]
+            [ linkTo Route.Settings [ i [ class "ion-gear-a" ] [], text "\u{00A0}Settings" ]
             , linkTo Route.Logout [ text "Sign out" ]
             ]
 
@@ -123,12 +114,6 @@ isActive page route =
             True
 
         ( Settings, Route.Settings ) ->
-            True
-
-        ( Profile pageUsername, Route.Profile routeUsername ) ->
-            pageUsername == routeUsername
-
-        ( NewArticle, Route.NewArticle ) ->
             True
 
         _ ->

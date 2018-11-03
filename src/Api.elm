@@ -1,4 +1,4 @@
-port module Api exposing (Cred, addServerError, application, decodeErrors, delete, get, login, logout, post, put, register, settings, storeCredWith, username, viewerChanges)
+port module Api exposing (Cred, addServerError, application, decodeErrors, delete, get, login, logout, post, put, register, settings, storeCredWith, userChanges, username)
 
 {-| This module is responsible for communicating to the Conduit API.
 
@@ -22,7 +22,7 @@ import Username exposing (Username)
 -- CRED
 
 
-{-| The authentication credentials for the Viewer (that is, the currently logged-in user.)
+{-| The authentication credentials for the User (that is, the currently logged-in user.)
 
 This includes:
 
@@ -81,8 +81,8 @@ decode decoder value =
 port onStoreChange : (Value -> msg) -> Sub msg
 
 
-viewerChanges : (Maybe viewer -> msg) -> Decoder (Cred -> viewer) -> Sub msg
-viewerChanges toMsg decoder =
+userChanges : (Maybe viewer -> msg) -> Decoder (Cred -> viewer) -> Sub msg
+userChanges toMsg decoder =
     onStoreChange (\value -> toMsg (decodeFromChange decoder value))
 
 
@@ -140,12 +140,12 @@ application viewerDecoder config =
     let
         init flags url navKey =
             let
-                maybeViewer =
+                maybeUser =
                     Decode.decodeValue Decode.string flags
                         |> Result.andThen (Decode.decodeString (storageDecoder viewerDecoder))
                         |> Result.toMaybe
             in
-            config.init maybeViewer url navKey
+            config.init maybeUser url navKey
     in
     Browser.application
         { init = init

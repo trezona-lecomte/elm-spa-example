@@ -14,12 +14,11 @@ import Json.Decode.Pipeline exposing (hardcoded, required)
 import Json.Encode as Encode
 import Loading
 import Log
-import Profile exposing (Profile)
 import Route
 import Session exposing (Session)
 import Task
+import User exposing (User)
 import Username as Username exposing (Username)
-import Viewer exposing (Viewer)
 
 
 
@@ -213,7 +212,7 @@ type Msg
     | EnteredBio String
     | EnteredAvatar String
     | CompletedFormLoad (Result Http.Error Form)
-    | CompletedSave (Result Http.Error Viewer)
+    | CompletedSave (Result Http.Error User)
     | GotSession Session
     | PassedSlowLoadThreshold
 
@@ -271,7 +270,7 @@ update msg model =
 
         CompletedSave (Ok viewer) ->
             ( model
-            , Viewer.store viewer
+            , User.store viewer
             )
 
         GotSession session ->
@@ -390,8 +389,8 @@ validateField (Trimmed form) field =
                     passwordLength =
                         String.length form.password
                 in
-                if passwordLength > 0 && passwordLength < Viewer.minPasswordChars then
-                    [ "password must be at least " ++ String.fromInt Viewer.minPasswordChars ++ " characters long." ]
+                if passwordLength > 0 && passwordLength < User.minPasswordChars then
+                    [ "password must be at least " ++ String.fromInt User.minPasswordChars ++ " characters long." ]
 
                 else
                     []
@@ -418,7 +417,7 @@ trimFields form =
 {-| This takes a Valid Form as a reminder that it needs to have been validated
 first.
 -}
-edit : Cred -> TrimmedForm -> Http.Request Viewer
+edit : Cred -> TrimmedForm -> Http.Request User
 edit cred (Trimmed form) =
     let
         encodedAvatar =
@@ -449,7 +448,7 @@ edit cred (Trimmed form) =
             Encode.object [ ( "user", encodedUser ) ]
                 |> Http.jsonBody
     in
-    Api.settings cred body Viewer.decoder
+    Api.settings cred body User.decoder
 
 
 nothingIfEmpty : String -> Maybe String
